@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include<locale.h>
+
+#define SIZE 5
+#define MATERIAL_NAME_LEN 20
+
+// Определение структуры "карниз"
+typedef struct {
+    int length;          // длина
+    int ceilingWidth;    // ширина потолка
+    int wallHeight;      // высота стены
+    char material[MATERIAL_NAME_LEN]; // материал
+} cornice_t;
+
+// Прототипы функций
+int getRandomNumber(int min, int max);// Функция получения случайного числа
+void getRandomString(char* str, int length);// Функция генерации случайной строки
+void fillCornicesArray(cornice_t cornices[], int size);// Заполнение массива случайными значениями
+void fill_array(cornice_t* cornices, int size);
+void print_cornice(cornice_t cornice);// Печать одной структуры
+void print_array(cornice_t* cornices, int size);// Печать всего массива структур
+
+int main(void) {
+    setlocale(LC_ALL, "RUS");
+    printf("=== Программа работы со структурой 'Карниз' ===\n\n");
+
+    // Способ 1: Инициализация константными значениями
+    printf("1. Инициализация массива константными значениями:\n");
+    cornice_t cornices_const[SIZE] = {
+        {10, 5, 3, "Wood"},
+        {8, 4, 2, "Aluminium"},
+        {12, 5, 4, "Plastic"},
+        {6, 3, 2, "Steel"},
+        {9, 6, 3, "Metal"}
+    };
+    print_array(cornices_const, SIZE);
+
+    // Способ 2: Инициализация случайными значениями
+    printf("\n2. Инициализация массива случайными значениями:\n");
+    cornice_t cornices_random[SIZE];
+    fill_array(cornices_random, SIZE);
+    print_array(cornices_random, SIZE);
+
+    // Демонстрация вывода одной записи
+    printf("\n3. Вывод одной записи (первой из случайного массива):\n");
+    printf("   ==============================================\n");
+    print_cornice(cornices_random[0]);
+
+    return 0;
+}
+
+// Функция для получения случайного числа в диапазоне [min, max]
+int getRandomNumber(int min, int max) {
+    return rand() % (max - min + 1) + min;
+}
+
+// Функция для генерации случайной строки
+void getRandomString(char* str, int length) {
+    const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    for (int i = 0; i < length - 1; i++) {
+        int index = rand() % (sizeof(charset) - 1);
+        str[i] = charset[index];
+    }
+    str[length - 1] = '\0';
+}
+
+// Функция заполнения массива случайными значениями
+void fillCornicesArray(cornice_t cornices[], int size) {
+    srand(time(NULL));
+
+    for (int i = 0; i < size; i++) {
+        cornices[i].length = getRandomNumber(1, 10);
+        cornices[i].ceilingWidth = getRandomNumber(1, 5);
+        cornices[i].wallHeight = getRandomNumber(2, 8);
+
+        // Создаем случайное имя материала
+        char material[10];
+        getRandomString(material, 8);
+        strncpy(cornices[i].material, material, MATERIAL_NAME_LEN - 1);
+        cornices[i].material[MATERIAL_NAME_LEN - 1] = '\0';
+    }
+}
+
+// Функция заполнения полей массива (обертка для fillCornicesArray)
+void fill_array(cornice_t* cornices, int size) {
+    fillCornicesArray(cornices, size);
+}
+
+// Функция печати значений полей одной записи
+void print_cornice(cornice_t cornice) {
+    printf("| %-10d | %-15d | %-12d | %-20s |\n",
+        cornice.length,
+        cornice.ceilingWidth,
+        cornice.wallHeight,
+        cornice.material);
+}
+
+// Функция печати значений полей массива
+void print_array(cornice_t* cornices, int size) {
+    printf("   =====================================================================\n");
+    printf("   |  Длина     |  Ширина потолка |  Высота стены |  Материал           |\n");
+    printf("   =====================================================================\n");
+
+    for (int i = 0; i < size; i++) {
+        printf("   ");
+        print_cornice(cornices[i]);
+    }
+
+    printf("   =====================================================================\n");
+}
