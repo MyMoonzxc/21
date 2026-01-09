@@ -1,0 +1,155 @@
+#include <stdio.h>           
+#include <stdlib.h>          
+#include <string.h>          
+#include <locale.h>          
+#include <time.h>          
+
+#define SIZE 5               
+#define MATERIAL_LEN 30      
+
+// структура для карниза
+typedef struct {
+    int dlina;               // длина
+    int shirina;             // ширина потолка
+    int vysota;              // высота стены
+    char material[MATERIAL_LEN]; // материал
+} Karniz;
+
+// прототипы функций
+void zapolnit_massiv(Karniz* karnizy, int razmer);
+void pokazat_odin(Karniz k);
+void pokazat_vse(Karniz* karnizy, int razmer);
+int random_chislo(int ot, int do_chislo);
+Karniz* naiti_po_materialu(Karniz* karnizy, int razmer, char* material);
+int sravnenie(const void* a, const void* b);
+void sortirovat_po_ploshadi(Karniz* karnizy, int razmer);
+int vichislit_ploshad(Karniz k);
+
+int main(void) {
+    // включаем поддержку русского языка
+    setlocale(LC_ALL, "Russian");
+
+    printf("=== Программа для работы с карнизами ===\n\n");
+
+    Karniz karnizy[SIZE]; // массив карнизов
+
+    // 1. Заполнение массива
+    printf("1. Заполняем массив случайными данными:\n");
+    zapolnit_massiv(karnizy, SIZE);
+    pokazat_vse(karnizy, SIZE);
+
+    // 2. Поиск по материалу
+    printf("\n2. Поиск карниза по материалу:\n");
+    char iskomiy_material[MATERIAL_LEN];
+    printf("   Введите материал для поиска: ");
+    scanf("%29s", iskomiy_material);
+
+    Karniz* nayden = naiti_po_materialu(karnizy, SIZE, iskomiy_material);
+    if (nayden != NULL) {
+        printf("   Найден карниз: ");
+        pokazat_odin(*nayden);
+    }
+    else {
+        printf("   Карниз из материала '%s' не найден\n", iskomiy_material);
+    }
+
+    // 3. Сортировка
+    printf("\n3. Сортировка по площади (длина × ширина):\n");
+    sortirovat_po_ploshadi(karnizy, SIZE);
+    pokazat_vse(karnizy, SIZE);
+
+    // 4. Показ площадей
+    printf("\n4. Площади для проверки сортировки:\n");
+    printf("   +----------------------+-----------+\n");
+    printf("   |      Материал        |  Площадь  |\n");
+    printf("   +----------------------+-----------+\n");
+
+    for (int i = 0; i < SIZE; i++) {
+        int ploshad = vichislit_ploshad(karnizy[i]);
+        printf("   | %-20s | %-9d |\n", karnizy[i].material, ploshad);
+    }
+    printf("   +----------------------+-----------+\n");
+
+    printf("\nПрограмма завершена.\n");
+    return 0;
+}
+
+// случайное число в диапазоне
+int random_chislo(int ot, int do_chislo) {
+    return rand() % (do_chislo - ot + 1) + ot;
+}
+
+// заполнение массива
+void zapolnit_massiv(Karniz* karnizy, int razmer) {
+    srand(time(NULL));
+
+    // возможные материалы
+    const char* materiali[] = {
+        "Дерево", "Металл", "Пластик",
+        "Алюминий", "Сталь", "Стекло"
+    };
+    int vsego_materialov = 6;
+
+    for (int i = 0; i < razmer; i++) {
+        karnizy[i].dlina = random_chislo(1, 12);
+        karnizy[i].shirina = random_chislo(1, 8);
+        karnizy[i].vysota = random_chislo(2, 6);
+
+        int index = rand() % vsego_materialov;
+        strncpy(karnizy[i].material, materiali[index], MATERIAL_LEN - 1);
+        karnizy[i].material[MATERIAL_LEN - 1] = '\0';
+    }
+}
+
+// показать один карниз
+void pokazat_odin(Karniz k) {
+    printf("| %-6d | %-9d | %-7d | %-20s |\n",
+        k.dlina, k.shirina, k.vysota, k.material);
+}
+
+// показать все карнизы
+void pokazat_vse(Karniz* karnizy, int razmer) {
+    printf("   +--------+-----------+---------+----------------------+\n");
+    printf("   | Длина  |  Ширина   | Высота  |      Материал        |\n");
+    printf("   +--------+-----------+---------+----------------------+\n");
+
+    for (int i = 0; i < razmer; i++) {
+        printf("   ");
+        pokazat_odin(karnizy[i]);
+    }
+
+    printf("   +--------+-----------+---------+----------------------+\n");
+}
+
+// поиск по материалу
+Karniz* naiti_po_materialu(Karniz* karnizy, int razmer, char* material) {
+    for (int i = 0; i < razmer; i++) {
+        if (strcmp(karnizy[i].material, material) == 0) {
+            return &karnizy[i];
+        }
+    }
+    return NULL;
+}
+
+// вычисление площади
+int vichislit_ploshad(Karniz k) {
+    return k.dlina * k.shirina;
+}
+
+// сравнение для qsort
+int sravnenie(const void* a, const void* b) {
+    const Karniz* k1 = (const Karniz*)a;
+    const Karniz* k2 = (const Karniz*)b;
+
+    int ploshad1 = vichislit_ploshad(*k1);
+    int ploshad2 = vichislit_ploshad(*k2);
+
+    if (ploshad1 < ploshad2) return -1;
+    if (ploshad1 > ploshad2) return 1;
+    return 0;
+}
+
+// сортировка по площади
+void sortirovat_po_ploshadi(Karniz* karnizy, int razmer) {
+    qsort(karnizy, razmer, sizeof(Karniz), sravnenie);
+}
